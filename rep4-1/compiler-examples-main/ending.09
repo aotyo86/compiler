@@ -1,0 +1,259 @@
+
+*
+* micro-C driver for v09 emulator
+*
+*	12-Dec-81	M.Ohta,H.Tezuka
+*                       Shinji Kono
+*
+
+___CONST
+	FCW    10000,1000
+	FCW    100,10
+        FCW    1,0 
+
+PRINT   PSHS   D,X,Y,U
+	LEAS   -10,S
+        LEAU   ,S
+        LEAX   2,S
+        STD    ,U
+        TSTA                Minus?
+        BPL    ___P0
+        LDA    #'-
+        STA    ,X+
+        LDA    10,S
+        NEGB                Negate
+        NEGA
+        SBCA   #0
+___P0
+        LEAY   ___CONST-___P5,PCR
+___P5
+        STD    ,U
+	BNE    ___P6
+	LDA    #'0          Zero case
+        STA    ,X+
+        BRA    ___P4
+___P6
+        CMPD   ,Y           Zero Suppress
+        BGE    ___P1
+	LEAY   2,Y
+	BRA    ___P6
+___P1
+        LDA    #'0          Outer loop
+        STA    ,X
+        LDD    ,U
+___P2
+        SUBD   ,Y           Digit loop
+        BLT    ___P3
+        INC    ,X
+        BRA    ___P2
+___P3
+	ADDD   ,Y           Recovery
+	STD    ,U
+        LEAX   1,X          Next char
+        LEAY   2,Y          Next divider
+        LDD    ,Y
+        BNE    ___P1
+___P4
+	LDA    #$0A
+        STA    ,X+
+        CLR    ,X           Line terminator
+	LEAX   2,S
+        TFR    X,D
+        BSR    PUTS
+        LEAS   10,S
+        PULS   D,X,Y,U,PC
+
+PUTS    PSHS   D,X,Y,U
+        TFR    D,X
+___LOOP
+        LDB    ,X+
+        BEQ     ___LAST
+        SWI2
+        BRA     ___LOOP
+___LAST
+        PULS   D,X,Y,U,PC
+
+*
+_MULTI	PSHS	D,X,Y		multiply
+	
+	LDA	,S
+	LDB	3,S
+	MUL
+	STB	4,S
+	
+	LDD	1,S
+	MUL
+	STB	5,S
+	
+	LDA	1,S
+	LDB	3,S
+	MUL
+	ADDA	4,S
+	ADDA	5,S
+	
+	LEAS	6,S
+	RTS
+*
+_DIVIDE	CLR	,-S		signed divide  D/X -> D?
+	
+	CMPX	#0
+	BPL	_02000
+	
+	COM	,S
+	
+	EXG	D,X
+	LBSR	_00020
+	EXG	D,X
+
+_02000	TSTA
+	BPL	_02001
+	
+	COM	,S
+	
+	LBSR	_00020
+	
+_02001	LBSR	_00010
+	TFR	X,D
+	TST	,S+
+	BPL	_02002
+	
+	LBSR	_00020
+	
+_02002	RTS
+*
+_00003	LBSR	_00010		unsigned divide
+	TFR	X,D
+	RTS
+*
+_00004	CLR	,-S		signed modulous
+	
+	CMPX	#0
+	BPL	_04000
+	
+	EXG	D,X
+	BSR	_00020
+	EXG	D,X
+
+_04000	TSTA
+	BPL	_04001
+	
+	COM	,S
+	BSR	_00020
+	
+_04001	BSR	_00010
+	
+	TST	,S+
+	BPL	_04002
+	
+	BSR	_00020
+	
+_04002	RTS
+*
+_00005	BSR	_00010		unsigned modulous
+
+	RTS
+*
+_00006	CMPX	#0		signed left shift
+	BMI	_06001
+ 
+_06000	BEQ	_06009
+	LSLB
+	ROLA
+	LEAX	-1,X
+	BRA	_06000
+	
+_06001	BEQ	_06009
+	ASRA
+	RORB
+	LEAX	1,X
+	BRA	_06001
+	
+_06009	RTS
+*
+_00007	CMPX	#0		unsined left shift
+	BMI	_07001
+	
+_07000	BEQ	_07009
+	LSLB
+	ROLA
+	LEAX	-1,X
+	BRA	_07000
+	
+_07001	BEQ	_07009
+	LSRA
+	RORB
+	LEAX	1,X
+	BRA	_07001
+	
+_07009	RTS
+*
+_00008	CMPX	#0		sined right shift
+	BMI	_08001
+	
+_08000	BEQ	_08009
+	ASRA
+	RORB
+	LEAX	-1,X
+	BRA	_08000
+	
+_08001	BEQ	_08009
+	LSLB
+	ROLA
+	LEAX	1,X
+	BRA	_08001
+	
+_08009	RTS
+*
+_00009	CMPX	#0		unsined right shift
+	BMI	_09001
+	
+_09000	BEQ	_09009
+	LSRA
+	RORB
+	LEAX	-1,X
+	BRA	_09000
+	
+_09001	BEQ	_09009
+	LSLB
+	ROLA
+	LEAX	1,X
+	BRA	_09001
+	
+_09009	RTS
+*
+_00020	NEGA			negate D reg
+	NEGB
+	SBCA	#0
+	RTS
+*
+_00010	PSHS	D,X		divide subroutine
+	
+	CLRA
+	CLRB
+	
+	LDX	#17
+	
+_00011	SUBD	2,S
+	BCC	_00012
+	
+	ADDD	2,S
+	
+_00012	ROL	1,S
+	ROL	,S
+	ROLB
+	ROLA
+	
+	LEAX	-1,X
+	BNE	_00011
+	
+	RORA
+	RORB
+	
+	COM	1,S
+	COM	,S
+	PULS	X
+	
+	LEAS	2,S
+	RTS
+
+        END

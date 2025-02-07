@@ -1,0 +1,105 @@
+	cal     r3,0(r0)
+	l	r31,76(SP)
+	l	r0,88(SP)
+	mtspr	LR,r0
+	ai	SP,SP,80
+	bcr	BO_ALWAYS,CR0_LT
+# traceback table
+	.long	0x00000000
+	.byte	0x00			# VERSION=0
+	.byte	0x00			# LANG=TB_C
+	.byte	0x20			# IS_GL=0,IS_EPROL=0,HAS_TBOFF=1
+					# INT_PROC=0,HAS_CTL=0,TOCLESS=0
+					# FP_PRESENT=0,LOG_ABORT=0
+	.byte	0x41			# INT_HNDL=0,NAME_PRESENT=1
+					# USES_ALLOCA=0,CL_DIS_INV=WALK_ONCOND
+					# SAVES_CR=0,SAVES_LR=1
+	.byte	0x80			# STORES_BC=1,FPR_SAVED=0
+	.byte	0x01			# GPR_SAVED=1
+	.byte	0x00			# FIXEDPARMS=0
+	.byte	0x01			# FLOATPARMS=0,PARMSONSTK=1
+	.long	0x00000048		# TB_OFFSET
+	.short	4			# NAME_LEN
+	.byte	"main"
+	.byte	0			# padding
+	.byte	0			# padding
+# End of traceback table
+.print:                                 # 0x00000060 (H.10.NO_SYMBOL+0x60)
+	mfspr	r0,LR
+	st	r31,-4(SP)
+	st	r0,8(SP)
+	stu	SP,-80(SP)
+	l	r31,T.20._test0_c_(RTOC)
+	st	r3,104(SP)
+	cal	r3,0(r31)
+	l	r5,104(SP)
+	cal	r4,0(r5)
+	bl	.printf{PR}
+	cror	CR3_SO,CR3_SO,CR3_SO
+	l	r31,76(SP)
+	l	r0,88(SP)
+	mtspr	LR,r0
+	ai	SP,SP,80
+	bcr	BO_ALWAYS,CR0_LT
+# traceback table
+	.long	0x00000000
+	.byte	0x00			# VERSION=0
+	.byte	0x00			# LANG=TB_C
+	.byte	0x20			# IS_GL=0,IS_EPROL=0,HAS_TBOFF=1
+					# INT_PROC=0,HAS_CTL=0,TOCLESS=0
+					# FP_PRESENT=0,LOG_ABORT=0
+	.byte	0x41			# INT_HNDL=0,NAME_PRESENT=1
+					# USES_ALLOCA=0,CL_DIS_INV=WALK_ONCOND
+					# SAVES_CR=0,SAVES_LR=1
+	.byte	0x80			# STORES_BC=1,FPR_SAVED=0
+	.byte	0x01			# GPR_SAVED=1
+	.byte	0x01			# FIXEDPARMS=1
+	.byte	0x01			# FLOATPARMS=0,PARMSONSTK=1
+	.long	0x00000000		# 
+	.long	0x00000040		# TB_OFFSET
+	.short	5			# NAME_LEN
+	.byte	"print"
+	.byte	0			# padding
+# End of traceback table
+	.long	0x00000000              # "\0\0\0\0"
+# End	csect	H.10.NO_SYMBOL{PR}
+
+# .data section
+
+
+	.toc	                        # 0x000000c0 
+T.24.main:
+	.tc	H.24.main{TC},main{DS}  
+T.28.variable:
+	.tc	H.28.variable{TC},variable
+T.32.print:
+	.tc	H.32.print{TC},print{DS}
+T.20._test0_c_:
+	.tc	H.20._test0_c_{TC},E.18._test0_c_{RW}
+
+
+	.csect	main{DS}                
+	.long	.main                   # "\0\0\0\0"
+	.long	TOC{TC0}                # "\0\0\0\300"
+	.long	0x00000000              # "\0\0\0\0"
+# End	csect	main{DS}
+
+
+	.csect	print{DS}               
+	.long	.print                  # "\0\0\0`"
+	.long	TOC{TC0}                # "\0\0\0\300"
+	.long	0x00000000              # "\0\0\0\0"
+# End	csect	print{DS}
+
+
+	.csect	E.18._test0_c_{RW}, 3   
+	.long	0x30782530              # "0x%0"
+	.long	0x3878203d              # "8x ="
+	.long	0x2025640a              # " %d\n"
+# End	csect	E.18._test0_c_{RW}
+	.long	0x00000000              # "\0\0\0\0"
+
+
+
+# .bss section
+	.comm	variable, 256, 3        # 0x000000f8 
