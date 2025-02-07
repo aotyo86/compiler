@@ -8,7 +8,7 @@ examples のコンパイラを使った結果と比較してみよ。また、gd
 
 ---
 ## 計算 3-(4-2)
-作成したアセンブラコード
+[作成したアセンブラコード](https://github.com/aotyo86/compiler/blob/main/rep4-1/cal_64.asm)
 
 ### アセンブラ出力
 ```
@@ -63,7 +63,7 @@ Result: 1
 ---
 ## 計算 0+(1+(3-2))-(0+(1+(2-3)))
 
-作成したアセンブラコード
+[作成したアセンブラコード](https://github.com/aotyo86/compiler/blob/main/rep4-1/cal2_64.asm)
 
 ### アセンブラ出力
 ```
